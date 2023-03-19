@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Aakriti Cordinator</string>
+    <string name="scan">Scan</string>
+    <string name="logo">Logo</string>
+    <string name="aakriti_cordinator">Aakriti Cordinator</string>
+    <string name="todo">TODO</string>
+    <string name="textview">TextView</string>
+</resources>
