@@ -44,9 +44,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void scanQR() {
         ScanOptions options = new ScanOptions();
-        options.setPrompt("Scan QR Code");
+        options.setPrompt("Scan AAKRITI QR Code");
         // set potrait orientation
+
         options.setOrientationLocked(true);
+        options.setBeepEnabled(true);
+        options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+        options.setCameraId(0);
         barLauncher.launch(options);
 
     }

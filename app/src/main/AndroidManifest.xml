@@ -17,12 +17,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AakritiCordinator"
         android:usesCleartextTraffic="true"
+        android:screenOrientation="portrait"
         tools:targetApi="31">
         <activity
             android:name=".ManualIdVerify"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".SplashScreen"
+            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,20 +35,24 @@
         </activity>
         <activity
             android:name=".Contacts"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".StudentDetail"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:exported="true" />
 
         <meta-data
             android:name="preloaded_fonts"
+            android:screenOrientation="portrait"
             android:resource="@array/preloaded_fonts" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
-            android:screenOrientation="fullSensor"
+            android:screenOrientation="portrait"
             tools:replace="screenOrientation" />
     </application>
 

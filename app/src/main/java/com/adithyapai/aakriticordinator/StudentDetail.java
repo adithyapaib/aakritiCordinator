@@ -5,28 +5,33 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.Locale;
 
 public class StudentDetail extends AppCompatActivity {
 
     TextView ttv;
-    Button reverify;
+    Button reverify, rescan;
+    ActivityResultLauncher<ScanOptions> barLauncher;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -36,6 +41,25 @@ public class StudentDetail extends AppCompatActivity {
         ttv = findViewById(R.id.UserDetailsTextViews);
         reverify = findViewById(R.id.reverify);
         reverify.setOnClickListener(v -> startActivity(new Intent(StudentDetail.this, ManualIdVerify.class)));
+        rescan = findViewById(R.id.rescan);
+        // Open qrcode scanner on rescan button click
+        rescan.setOnClickListener(v -> {
+            ScanOptions options = new ScanOptions();
+            options.setPrompt("Scan QR Code");
+            // set potrait orientation
+            options.setOrientationLocked(true);
+            barLauncher.launch(options);
+        });
+
+      barLauncher  = registerForActivityResult(new ScanContract(), result -> {
+            if (result.getContents() != null) {
+                String url = result.getContents();
+                startActivity(new Intent(this, StudentDetail.class).putExtra("data","https://aakriti23.canaraengineering.in/user.php?aid="+ url));
+            }
+        });
+
+
+
         String url;
 
          url =  getIntent().getStringExtra("data");
@@ -43,23 +67,19 @@ public class StudentDetail extends AppCompatActivity {
             Toast.makeText(this, "Invalid ID", Toast.LENGTH_SHORT).show();
             finish();
         }
-        Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
 
         RequestQueue queue = Volley.newRequestQueue(this);
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+        @SuppressLint({"DefaultLocale", "SetTextI18n"}) StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 response -> {
-
-
                     try {
 
-                        JSONObject jsonObject = null;
-                        jsonObject = new JSONObject(response.toString());
-                        String id, email, name, phone, inst, course, usn, branch, address, updated, paid, pending;
+                        JSONObject jsonObject;
+                        jsonObject = new JSONObject(response);
+                        String id, email, name, phone, inst, course, usn, branch, paid, pending;
                         ImageView imageView = findViewById(R.id.userimg);
                         imageView.setClipToOutline(true);
                         String imgsrc =  "https://aakriti23.canaraengineering.in/user_images/"+jsonObject.getString("photo");
                         Picasso.get().load(imgsrc).into(imageView);
-                        id = jsonObject.getString("id");
                         email = jsonObject.getString("email");
                         name = jsonObject.getString("Name");
                         phone = jsonObject.getString("phone");
@@ -67,10 +87,16 @@ public class StudentDetail extends AppCompatActivity {
                         course = jsonObject.getString("course");
                         usn = jsonObject.getString("usn");
                         branch = jsonObject.getString("branch");
-                        address = jsonObject.getString("address");
-                        updated = jsonObject.getString("updated");
                         paid = jsonObject.getString("paid");
                         pending = jsonObject.getString("pending");
+                        id = String.format("%05d", Integer.parseInt(jsonObject.getString("id")));
+                        // check if size of branch is greater than 20
+                        if (branch.length() > 20){
+                            branch = branch.substring(0,20);
+                        }
+                        if (inst.length() > 20){
+                            inst = inst.substring(0,20);
+                        }
 
 
                         if (Integer.parseInt(paid) >=300){
@@ -84,20 +110,40 @@ public class StudentDetail extends AppCompatActivity {
                             MediaPlayer mp = MediaPlayer.create(this, R.raw.success);
                             mp.start();
 
+
+
+
                         }else if (Integer.parseInt(paid) < 300){
-                            ttv.setText(
-                                    "Name: " + name +
-                                            "\nEmail: " + email +
-                                            "\nPhone: " + phone +
-                                            "\nInstitute: " + inst.substring(0,20) +
-                                            "\nCourse: " + course +
-                                            "\nUSN: " + usn +
-                                            "\nBranch: " + branch +
-                                            "\nPaid: " + paid +
-                                            "\nPending: " + pending
-                            );
 
+                          try {
+                              String formattedText =
+                                      "  <h2> ID: AAK" + id + "</h2>\n" +
+                                              "  Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + name +
+                                              "  <br />\n" +
+                                              "  Email:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + email +
+                                              "  <br />\n" +
+                                              "  Phone:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href=tel:" + phone + ">" + phone + "</a>" +
+                                              "  <br />\n" +
+                                              "  Institute:&nbsp;&nbsp;" + inst.substring(0,20) +
+                                              "  <br />\n" +
+                                              "  Course:&nbsp;&nbsp;" + course +
+                                              "  <br />\n" +
+                                              "  USN:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + usn.toUpperCase(Locale.ROOT) +
+                                              "  <br />\n" +
+                                              "  Branch:&nbsp;&nbsp;" + branch+
+                                              "  <br />\n" +
+                                              "  Paid:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +  paid +
+                                              "  <br />\n" +
+                                              "  Pending:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + pending;
+                              ttv.setText(Html.fromHtml(formattedText));
+                              // setline height to 1.5
 
+                              ttv.setLineSpacing(0,1.5f);
+
+                            }catch (Exception e){
+                                e.printStackTrace();
+
+                            }
 
 
 
